@@ -52,7 +52,7 @@ CLogError cl_init(FILE* stream, CLogAttributeFlags flags) {
     return CL_ERROR_SUCCESS;
 }
 
-CLogError cl_init_with_path(const char* filename, CLogAttributeFlags flags) {
+CLogError cl_init_with_file(const char* filename, CLogAttributeFlags flags) {
     FILE* file = fopen(filename, "w+");
     
     if (!file) {
