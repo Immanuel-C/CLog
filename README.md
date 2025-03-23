@@ -4,7 +4,7 @@ A simple thread safe logger made in C that has good header documentation.
 
 ### How to build
 
-CLog does not have any dependenices. The example will only be built if the cmake command CL_BUILD_EXAMPLE was on.
+CLog does not have any dependenices. The example will only be built if the cmake command CL_BUILD_EXAMPLE is on.
 
 ### Example
 
