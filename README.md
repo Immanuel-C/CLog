@@ -1,6 +1,6 @@
 # CLog
 
-A simple threadsafe logger made in C that has good header documentation.
+A simple thread safe logger made in C that has good header documentation.
 
 ### How to build
 
