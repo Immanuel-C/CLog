@@ -10,11 +10,10 @@
 #include <time.h>
 #include <stdbool.h>
 
-#define OUTPUT_BUFFER_INITIAL_SIZE 100ULL
-
 struct {
     FILE* stream;
-    CLogAttributeFlags flags;
+    clog_attribute_flags_t flags;
+    bool stream_is_file;
 } s_context;
 
 pthread_mutex_t s_mutex;
@@ -32,7 +31,7 @@ const char* const s_cl_type_colors[] = {
 void m_lock() { pthread_mutex_lock(&s_mutex); }
 void m_unlock() { pthread_mutex_unlock(&s_mutex); }
 
-CLogError cl_init(FILE* stream, CLogAttributeFlags flags) {
+clog_error_t clog_init(FILE* stream, clog_attribute_flags_t flags) {
     if (s_init)
         return CL_ERROR_ALREADY_INITIALIZED_CLOGGER;
 
@@ -44,6 +43,7 @@ CLogError cl_init(FILE* stream, CLogAttributeFlags flags) {
 
     s_context.stream = stream ? stream : stdout; 
     s_context.flags = flags;
+    s_context.stream_is_file = false;
 
     s_init = true;
 
@@ -52,17 +52,20 @@ CLogError cl_init(FILE* stream, CLogAttributeFlags flags) {
     return CL_ERROR_SUCCESS;
 }
 
-CLogError cl_init_with_file(const char* filename, CLogAttributeFlags flags) {
+clog_error_t clog_init_with_file(const char* filename, clog_attribute_flags_t flags) {
     FILE* file = fopen(filename, "w+");
     
     if (!file) {
         return CL_ERROR_FAILED_TO_OPEN_FILE;
     }
 
-    return cl_init(file, flags | CL_ATTRIB_STREAM_IS_FILE);
+    clog_error_t result = clog_init(file, flags);
+    s_context.stream_is_file = true;
+
+    return result;
 }
 
-bool cl_check_init() {
+bool check_init() {
     if (s_init) {
         return true;
     }
@@ -72,16 +75,16 @@ bool cl_check_init() {
     return false;
 }
 
-void cl_log(CLogType type, const char* fmt, ...) {
+void clog_log(clog_type_t type, const char* fmt, ...) {
     va_list args;
 
     va_start(args, fmt);
-    cl_vlog(type, fmt, args);
+    clog_vlog(type, fmt, args);
     va_end(args);
 }
 
-void cl_vlog(CLogType type, const char* fmt, va_list args) {
-    if (!cl_check_init()) return; 
+void clog_vlog(clog_type_t type, const char* fmt, va_list args) {
+    if (!check_init()) return; 
 
     const char* fmt_header;
 
@@ -127,7 +130,7 @@ void cl_vlog(CLogType type, const char* fmt, va_list args) {
 
     // Colours do not apply to files so the special code for colours are just printed instead of the colour changing. So if we are logging to a file we must
     // not include the colour codes.
-    if (!(s_context.flags & CL_ATTRIB_STREAM_IS_FILE)) {
+    if (!s_context.stream_is_file) {
         final_fmt_size += strlen(s_cl_type_colors[(size_t)type]) + strlen(s_cl_type_colors[(size_t)CL_TYPE_DEFAULT]);
     }
 
@@ -138,7 +141,7 @@ void cl_vlog(CLogType type, const char* fmt, va_list args) {
         return;
     }
 
-    if (s_context.flags & CL_ATTRIB_STREAM_IS_FILE) {
+    if (s_context.stream_is_file) {
         sprintf(final_fmt, "[%s] %s%s", 
                 time_str,
                 fmt_header, 
@@ -162,8 +165,8 @@ void cl_vlog(CLogType type, const char* fmt, va_list args) {
     free(final_fmt);
 }
 
-void cl_set_log_output_stream(FILE* stream) { 
-    if (!cl_check_init()) return; 
+void clog_set_log_output_stream(FILE* stream) {
+    if (!check_init()) return; 
 
     m_lock();
 
@@ -179,13 +182,13 @@ void cl_set_log_output_stream(FILE* stream) {
         s_context.stream = stream;
     }
 
-    s_context.flags |= ~CL_ATTRIB_STREAM_IS_FILE;
+    s_context.stream_is_file = false;
 
     m_unlock();
 }
 
-CLogError cl_set_log_output_file(const char* filename) {
-    if (!cl_check_init()) return CL_ERROR_NOT_INITIALIZED; 
+clog_error_t clog_set_log_output_file(const char* filename) {
+    if (!check_init()) return CL_ERROR_NOT_INITIALIZED; 
 
     FILE* file = fopen(filename, "w+");
     
@@ -193,22 +196,29 @@ CLogError cl_set_log_output_file(const char* filename) {
         return CL_ERROR_FAILED_TO_OPEN_FILE;
     }
 
-    cl_set_log_output_stream(file);
+    clog_set_log_output_stream(file);
 
-    s_context.flags |= CL_ATTRIB_STREAM_IS_FILE;
+
+    m_lock();
+    s_context.stream_is_file = true;
+    m_unlock();
     
     return CL_ERROR_SUCCESS;
 }
 
-void cl_terminate() {
-    if (!cl_check_init()) return; 
+void clog_terminate() {
+    if (!check_init()) return; 
 
+    m_lock();
+     
     if (s_context.stream != NULL   && 
         s_context.stream != stdout && 
         s_context.stream != stderr && 
         s_context.stream != stdin) {
         fclose(s_context.stream);
     }
+
+    m_unlock();
 
     pthread_mutex_destroy(&s_mutex);
 }

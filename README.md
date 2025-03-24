@@ -13,15 +13,15 @@ CLog does not have any dependenices. The example will only be built if the cmake
 
 int main(void) {
     // flags must always be 0. It is reserved.
-    cl_init(stdout, 0);
+    clog_init(stdout, 0);
 
-    cl_log(CL_TYPE_INFO, "Hello CLogger!\n");
-    cl_log(CL_TYPE_TRACE, "trace!\n");
-    cl_log(CL_TYPE_WARNING, "a warning! %s\n", "CLogger");
-    cl_log(CL_TYPE_ERROR, "Oh no! %d\n", 10);
-    cl_log(CL_TYPE_FATAL_ERROR, "Oh no!\n");
+    clog_log(CL_TYPE_INFO, "Hello CLog!\n");
+    clog_log(CL_TYPE_TRACE, "trace!\n");
+    clog_log(CL_TYPE_WARNING, "a warning! %s\n", "CLog");
+    clog_log(CL_TYPE_ERROR, "Oh no! %d\n", 10);
+    clog_log(CL_TYPE_FATAL_ERROR, "Oh no!\n");
 
-    cl_terminate();
+    clog_terminate();
 
     return 0;
 }
