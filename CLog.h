@@ -1,6 +1,10 @@
 #if !defined(CLOG_H)
 #define CLOG_H
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -73,5 +77,9 @@ clog_error_t clog_set_log_output_file(const char* filename);
  * @brief Terminate CLog. This function is no thread safe call it when all other threads are joined as it can cause undefined behaviour otherwise.
  */
 void clog_terminate();
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
