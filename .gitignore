@@ -53,11 +53,11 @@ dkms.conf
 
 # User defined
 
-Bin/
+bin/
 CMakeFiles/
 CMakeCache.txt
 Makefile
 compile_commands.json
 cmake_install.cmake
 .cache
-example.log
+*.log
