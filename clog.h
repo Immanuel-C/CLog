@@ -83,7 +83,7 @@ void clog_set_log_output_stream(FILE* stream);
  */
 clog_error_t clog_set_log_output_file(const char* filename);
 /**
- * @brief Set clog to not log anything that is passed into this function.
+ * @brief Set clog to not log anything that is passed into this function. This function is thread safe.
  * @param types This is a bitfield and multiple types can be passed in.
  */
 void clog_ignore_log_types(clog_type_flags_t types);
