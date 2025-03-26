@@ -9,7 +9,7 @@ CLog does not have any dependenices. The example will only be built if the cmake
 ### Example
 
 ```c 
-#include <CLog.h>
+#include <clog.h>
 
 int main(void) {
     // flags must always be 0. It is reserved.
